@@ -1,0 +1,41 @@
+name: ci/cd
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker images
+        run: docker compose build
+
+      - name: Run Docker Compose
+        run: |
+          docker compose down -v || true
+          docker compose up -d
+
+      - name: Wait for services to be ready
+        run: |
+          for i in $(seq 1 30); do
+            curl -f http://localhost:8000/status && break
+            echo "($i/30)"
+            sleep 2
+          done
+          curl -f http://localhost:8000/status || { echo "Service not ready after 60 seconds!"; exit 1; }
+
+      - name: Run tests
+        run: curl http://localhost:8000/status
+
+      - name: Stop Docker Compose
+        if: always()
+        run: docker compose down
