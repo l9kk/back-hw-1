@@ -47,7 +47,7 @@ docker-compose down && docker-compose up -d
 
 ---
 
-That's it! 🎉 For detailed instructions, see [README.md](README.md)
+That's it!
 
 
 ## 📱 How to Use
